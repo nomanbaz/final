@@ -1,45 +1,65 @@
+let currentInput = "";
+let currentOperation = "";
+let firstValue = "";
+
 function appendToDisplay(value) {
-  document.getElementById('display').value += value;
+    document.getElementById('display').value += value;
+    currentInput += value;
 }
 
 function clearDisplay() {
-  document.getElementById('display').value = '';
-}
-
-function deleteLast() {
-  let currentValue = document.getElementById('display').value;
-  document.getElementById('display').value = currentValue.slice(0, -1);
+    document.getElementById('display').value = '';
+    currentInput = "";
+    currentOperation = "";
+    firstValue = "";
 }
 
 function calculate() {
-  let expression = document.getElementById('display').value;
-
-  // Split based on the operations
-  let components = expression.split(/([+\-*/])/);
-  let stack = [];
-
-  for (let i = 0; i < components.length; i++) {
-      let item = components[i];
-      if (item === "+" || item === "-" || item === "*" || item === "/") {
-          stack.push(item);
-      } else {
-          if (stack.length > 0 && (stack[stack.length - 1] === "*" || stack[stack.length - 1] === "/")) {
-              let op = stack.pop();
-              let prev = parseFloat(stack.pop());
-              let current = parseFloat(item);
-              if (op === "*") stack.push(prev * current);
-              if (op === "/") stack.push(prev / current);
-          } else {
-              stack.push(parseFloat(item));
-          }
-      }
-  }
-
-  let result = stack[0];
-  for (let i = 1; i < stack.length; i += 2) {
-      if (stack[i] === "+") result += stack[i + 1];
-      if (stack[i] === "-") result -= stack[i + 1];
-  }
-
-  document.getElementById('display').value = result;
+    let secondValue = parseFloat(currentInput);
+    if (currentOperation && firstValue !== "") {
+        switch(currentOperation) {
+            case '+':
+                currentInput = (parseFloat(firstValue) + secondValue).toString();
+                break;
+            case '-':
+                currentInput = (parseFloat(firstValue) - secondValue).toString();
+                break;
+            case '*':
+                currentInput = (parseFloat(firstValue) * secondValue).toString();
+                break;
+            case '/':
+                if (secondValue !== 0) {
+                    currentInput = (parseFloat(firstValue) / secondValue).toString();
+                } else {
+                    currentInput = "Error";
+                }
+                break;
+            default:
+                break;
+        }
+        document.getElementById('display').value = currentInput;
+        currentOperation = "";
+        firstValue = currentInput;
+    } else {
+        firstValue = currentInput;
+    }
 }
+
+function setOperation(op) {
+    if (currentInput) {
+        if (!firstValue) {
+            firstValue = currentInput;
+        } else {
+            calculate();
+        }
+        currentOperation = op;
+        currentInput = "";
+        document.getElementById('display').value += op;
+    }
+}
+
+document.querySelectorAll('button').forEach(button => {
+    if(['+', '-', '*', '/'].includes(button.innerText)) {
+        button.addEventListener('click', () => setOperation(button.innerText));
+    }
+});
